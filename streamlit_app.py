@@ -79,20 +79,20 @@ def main():
 
     @st.cache_data(show_spinner=True)
     def get_or_create_training_gif(model_key):
-        folder = f"outputs/{model_key}"
+        folder = f"Outputs/{model_key}"
         gif_path = os.path.join(folder, "training_progress.gif")
-
-        # ✅ First check if GIF already exists
+        print(gif_path)
+        # Check if GIF already exists
         if os.path.exists(gif_path):
             return gif_path
 
         # Otherwise, try to build from images
-        image_paths = sorted(glob.glob(f"{folder}/fake_epoch_*.png"), key=os.path.getmtime)
-        if not image_paths:
-            return None
+        # image_paths = sorted(glob.glob(f"{folder}/fake_epoch_*.png"), key=os.path.getmtime)
+        # if not image_paths:
+        #     return None
 
-        images = [Image.open(path) for path in image_paths]
-        imageio.mimsave(gif_path, images, duration=0.5, loop=0)
+        # images = [Image.open(path) for path in image_paths]
+        # imageio.mimsave(gif_path, images, duration=0.5, loop=0)
         return gif_path
 
     show_gif = st.checkbox("Show Training Progress")
@@ -100,7 +100,7 @@ def main():
     if show_gif:
         gif_path = get_or_create_training_gif(model_key)
         if gif_path is None:
-            st.warning(f"No training output images or GIF found in 'outputs/{model_key}/'.")
+            st.warning(f"No training output images or GIF found in 'Outputs/{model_key}/'.")
         else:
             st.image(gif_path, caption=f"Training Progress Over Epochs ({model_key})", use_container_width=True)
 

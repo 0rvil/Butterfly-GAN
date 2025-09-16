@@ -13,7 +13,7 @@ from Models.utils import weights_init
 
 def main():
     device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
-    model_name = "dcgan"
+    model_name = "DCGAN"
 
     checkpoint_dir = os.path.join("Checkpoints", model_name)
     output_dir = os.path.join("Outputs", model_name)
