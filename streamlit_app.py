@@ -20,17 +20,20 @@ MODEL_REGISTRY = {
     "Vanilla_GAN": {
         "class": VanillaGenerator,
         "weights": "vanilla_gan_gen.pth",
-        "max_images": 64
+        "max_images": 64,
+        'folder': "vanilla_gan"
     },
     "DCGAN": {
         "class": DCGenerator,
         "weights": "dcgan_gen.pth",
-        "max_images": 64
+        "max_images": 64,
+        'folder': "dcgan"
     },
     "StyleGAN_Lite": {
         "class": StyleGenerator,
         "weights": "stylegan_lite_gen.pth",
-        "max_images": 32
+        "max_images": 32,
+        'folder': "stylegan_lite"
     }
 }
 
@@ -79,7 +82,7 @@ def main():
 
     @st.cache_data(show_spinner=True)
     def get_or_create_training_gif(model_key):
-        folder = f"Outputs/{model_key}"
+        folder = f"Outputs/{MODEL_REGISTRY[model_key]['folder']}"
         gif_path = os.path.join(folder, "training_progress.gif")
         print(gif_path)
         # Check if GIF already exists
