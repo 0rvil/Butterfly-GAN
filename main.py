@@ -6,7 +6,7 @@ import streamlit_app
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["train-vanilla", "train-dcgan", "train-stylegan-lite", "ui"], required=True)
+    parser.add_argument("--mode", choices=["train-vanilla", "train-dcgan", "train-stylegan-lite", "ui"], default="ui")
     args = parser.parse_args()
 
     if args.mode == "train-vanilla":
