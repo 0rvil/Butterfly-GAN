@@ -1,0 +1,6 @@
+[server]
+folderWatchBlacklist = [
+    "Models/dnnlib",
+    "Models/training",
+    "Models/torch_utils"
+]

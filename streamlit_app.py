@@ -51,16 +51,16 @@ MODEL_REGISTRY = {
         "loader": "load_generator_pro",
         "weights": "stylegan-finetuning-000500.pkl",
         "repo_id": "0rvil/Butterfly-GAN-Models",
-        "max_images": 64,
+        "max_images": 16,
         "folder": "StyleGAN_Fine_Tuning"
     }
 }
 
+@st.cache_resource
 def load_generator_legacy(model_key, noise_dim, device):
     entry = MODEL_REGISTRY[model_key]
     gen = entry["class"](noise_dim).to(device)
     try:
-        st.toast(f"Downloading '{entry['weights']}' from Hugging Face Hub...")
         weights_path = hf_hub_download(
             repo_id=entry["repo_id"],
             filename=entry["weights"]
@@ -73,7 +73,6 @@ def load_generator_legacy(model_key, noise_dim, device):
             gen.load_state_dict(checkpoint)
             
         gen.eval()
-        st.toast(f"Successfully loaded {model_key}!")
         return gen
     except FileNotFoundError:
         st.error(f"Model weights not found: {entry['weights']}")
@@ -83,11 +82,10 @@ def load_generator_legacy(model_key, noise_dim, device):
         return None
     
 # Generator for Transfer Learning, Fine Tuned StyleGAN model
+@st.cache_resource
 def load_generator_pro(model_key, device):
     entry = MODEL_REGISTRY[model_key]
     try:
-        
-        st.toast(f"Downloading '{entry['weights']}' from Hugging Face Hub...")
         weights_path = hf_hub_download(
             repo_id=entry["repo_id"],
             filename=entry["weights"]
@@ -97,7 +95,6 @@ def load_generator_pro(model_key, device):
             G = legacy.load_network_pkl(f)['G_ema'].to(device)
         
         G.eval()
-        st.toast(f"Successfully loaded {model_key}!")
         return G
     except FileNotFoundError:
         st.error(f"Model weights not found: {entry['weights']}")
@@ -122,34 +119,33 @@ def main():
 
     if st.button("Generate"):
         gen = None
-        if model_meta["loader"] == "load_generator_pro":
-            gen = load_generator_pro(model_key, device)
-        elif model_meta["loader"] == "load_generator_legacy":
-            gen = load_generator_legacy(model_key, default_noise_dim, device)
         
-
+        # This spinner will ONLY run when the cache is empty.
+        # On subsequent clicks, it will be instant.
+        with st.spinner(f"Loading {model_key}... This may take a moment."):
+            if model_meta["loader"] == "load_generator_pro":
+                gen = load_generator_pro(model_key, device)
+            elif model_meta["loader"] == "load_generator_legacy":
+                gen = load_generator_legacy(model_key, default_noise_dim, device)
+        
         if gen:
-                with torch.no_grad():
-                    
-                    # This block checks *which* model is loaded and uses
-                    # the correct z_dim and function call for it.
-                    
-                    if model_key == "StyleGAN_Fine_Tuning":
-                        # Fine Tuned model uses z_dim of 512, which is stored in gen.z_dim
-                        z = torch.randn(num_images, gen.z_dim, device=device)
-                        # Fine Tuned model requires two arguments (z, labels), we pass None for labels
-                        fake_imgs = gen(z, None).cpu()
-                    else:
-                        # All other models use noise_dim=100
-                        z = torch.randn(num_images, default_noise_dim, device=device)
-                        # And are called with just z
-                        fake_imgs = gen(z).cpu()
+            # The spinner automatically disappears, and we show the images
+            with torch.no_grad():
+                
+                # This block checks *which* model is loaded and uses
+                # the correct z_dim and function call for it.
+                
+                if model_key == "StyleGAN_Fine_Tuning":
+                    z = torch.randn(num_images, gen.z_dim, device=device)
+                    fake_imgs = gen(z, None).cpu()
+                else:
+                    z = torch.randn(num_images, default_noise_dim, device=device)
+                    fake_imgs = gen(z).cpu()
 
-                    fake_imgs = denormalize(fake_imgs)
-                    grid = make_grid(fake_imgs, nrow=min(num_images, 8), padding=2)
-                    npimg = grid.permute(1, 2, 0).numpy()
-                    st.image(npimg, caption=f"Generated Butterflies ({model_key})", use_container_width=True)
-
+                fake_imgs = denormalize(fake_imgs)
+                grid = make_grid(fake_imgs, nrow=min(num_images, 8), padding=2)
+                npimg = grid.permute(1, 2, 0).numpy()
+                st.image(npimg, caption=f"Generated Butterflies ({model_key})", use_container_width=True)
     st.header("Training Progress GIF")
 
     @st.cache_data(show_spinner=True)
