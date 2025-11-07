@@ -1,0 +1,26 @@
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+
+# Data and training artifacts
+/Data/
+data/
+data_raw/
+Checkpoints/
+checkpoints/
+/Old_stylegan_dcgan
+*.pkl
+*.pth
+
+#Other
+.vscode/
+.idea/
+.DS_Store
+*.log
