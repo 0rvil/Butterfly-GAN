@@ -87,8 +87,13 @@ def load_generator_pro(model_key, device):
     entry = MODEL_REGISTRY[model_key]
     try:
         
-        with dnnlib.util.open_url(entry['weights']) as f:
-            # 'G_ema' is the generator with "Exponential Moving Average" weights, which are the highest quality.
+        st.toast(f"Downloading '{entry['weights']}' from Hugging Face Hub...")
+        weights_path = hf_hub_download(
+            repo_id=entry["repo_id"],
+            filename=entry["weights"]
+        )
+        
+        with dnnlib.util.open_url(weights_path) as f:
             G = legacy.load_network_pkl(f)['G_ema'].to(device)
         
         G.eval()
