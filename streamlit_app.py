@@ -10,6 +10,7 @@ import dnnlib
 import legacy
 import imageio
 from PIL import Image
+from huggingface_hub import hf_hub_download
 
 # Import generator classes
 from Models.vanilla_gan import Generator as VanillaGenerator
@@ -25,6 +26,7 @@ MODEL_REGISTRY = {
         "class": VanillaGenerator,
         "loader": "load_generator_legacy",
         "weights": "vanilla_gan_gen.pth",
+        "repo_id": "0rvil/Butterfly-GAN-Models",
         "max_images": 64,
         'folder': "vanilla_gan"
     },
@@ -32,6 +34,7 @@ MODEL_REGISTRY = {
         "class": DCGenerator,
         "loader": "load_generator_legacy",
         "weights": "dcgan_gen.pth",
+        "repo_id": "0rvil/Butterfly-GAN-Models",
         "max_images": 64,
         'folder': "dcgan"
     },
@@ -39,6 +42,7 @@ MODEL_REGISTRY = {
         "class": StyleGANGenerator,
         "loader": "load_generator_legacy",
         "weights": "stylegan_lite_gen.pth",
+        "repo_id": "0rvil/Butterfly-GAN-Models",
         "max_images": 32,
         'folder': "stylegan_lite"
     },
@@ -46,6 +50,7 @@ MODEL_REGISTRY = {
         "class": None,
         "loader": "load_generator_pro",
         "weights": "stylegan-finetuning-000500.pkl",
+        "repo_id": "0rvil/Butterfly-GAN-Models",
         "max_images": 64,
         "folder": "StyleGAN_Fine_Tuning"
     }
@@ -55,7 +60,13 @@ def load_generator_legacy(model_key, noise_dim, device):
     entry = MODEL_REGISTRY[model_key]
     gen = entry["class"](noise_dim).to(device)
     try:
-        checkpoint = torch.load(entry["weights"], map_location=device)
+        st.toast(f"Downloading '{entry['weights']}' from Hugging Face Hub...")
+        weights_path = hf_hub_download(
+            repo_id=entry["repo_id"],
+            filename=entry["weights"]
+        )
+        
+        checkpoint = torch.load(weights_path, map_location=device)
         if isinstance(checkpoint, dict) and 'gen' in checkpoint:
             gen.load_state_dict(checkpoint['gen'])
         else:

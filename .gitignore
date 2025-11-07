@@ -18,6 +18,7 @@ checkpoints/
 /Old_stylegan_dcgan
 *.pkl
 *.pth
+upload.py
 
 #Other
 .vscode/
